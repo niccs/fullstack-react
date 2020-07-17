@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import "./PlaceItem.css";
 import Card from "../../common/components/uiElements/Card";
 import Button from "../../common/components/formelements/Button";
 import Modal from "./../../common/components/uiElements/Modal";
 import Map from "./../../common/components/uiElements/Map";
+import { AuthContext } from "../../common/context/auth-context";
 
 const PlaceItem = ({ place }) => {
+  const authContext = useContext(AuthContext);
+
   const [showMap, setShowMap] = useState(false);
 
   const [confirmDeletion, setConfirmDeletion] = useState(false);
@@ -73,12 +76,17 @@ const PlaceItem = ({ place }) => {
           </div>
           <div className="place-item__actions">
             <Button inverse onClick={openMap}>
-              VIEW ON MAP
+              {console.log("nixxx", authContext)} VIEW ON MAP
             </Button>
-            <Button to={`/places/${place.placeId}`}>EDIT</Button>
-            <Button danger onClick={showDeletionHandler}>
-              DELETE
-            </Button>
+
+            {authContext.isLoggedIn && (
+              <React.Fragment>
+                <Button to={`/places/${place.placeId}`}>EDIT</Button>
+                <Button danger onClick={showDeletionHandler}>
+                  DELETE
+                </Button>
+              </React.Fragment>
+            )}
           </div>
         </Card>
       </li>

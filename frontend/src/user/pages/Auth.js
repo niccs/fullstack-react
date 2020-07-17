@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Input from "../../common/components/formelements/Input";
 import {
   VALIDATOR_MINLENGTH,
@@ -7,16 +7,19 @@ import {
 } from "../../common/util/validators";
 import { useForm } from "../../common/hooks/form-hook";
 import Button from "../../common/components/formelements/Button";
+import Card from "../../common/components/uiElements/Card";
 
 import "./AuthForm.css";
 const Auth = () => {
-  const [formState, inputHandler] = useForm(
+  const [isLoginMode, setIsLoginMode] = useState(true);
+
+  const [formState, inputHandler, setFormData] = useForm(
     {
-      name: {
+      email: {
         value: "",
         isValid: false,
       },
-      email: {
+      password: {
         value: "",
         isValid: false,
       },
@@ -26,34 +29,85 @@ const Auth = () => {
 
   const authSubmitHandler = (event) => {
     event.preventDefault();
+    console.log("login pressed", formState);
+  };
+
+  const switchModeHandler = () => {
+    //we are going  from sign up to loginMode so we need to drop the name
+    if (!isLoginMode) {
+      setFormData(
+        {
+          ...formState.inputs,
+          name: undefined,
+        },
+        formState.inputs.email.isValid && formState.inputs.password.isValid
+      );
+    } //we are going  from login  to signup so we added a new name field and hence form validity will surely be false
+    else {
+      setFormData(
+        {
+          ...formState.inputs,
+          name: {
+            value: "",
+            isValid: false,
+          },
+        },
+        false
+      );
+    }
+
+    setIsLoginMode((prevMode) => !prevMode);
   };
 
   return (
-    <form className="auth-form " onSubmit={authSubmitHandler}>
-      <Input
-        element="input"
-        label="Email"
-        validators={[
-          VALIDATOR_MINLENGTH(4),
-          VALIDATOR_REQUIRE(),
-          VALIDATOR_EMAIL(),
-        ]}
-        placeholder="Enter your email"
-        type="email"
-        errorText="Please enter a valid email"
-        onInput={inputHandler}
-      />
-      <Input
-        element="input"
-        label="Password"
-        validators={[VALIDATOR_MINLENGTH(4), VALIDATOR_REQUIRE()]}
-        placeholder="Enter your password"
-        type="password"
-        errorText="Please enter a valid password"
-        onInput={inputHandler}
-      />
-      <Button>LOGIN</Button>
-    </form>
+    <Card className="authentication">
+      <h2>Login Required</h2>
+      <hr />
+      <form onSubmit={authSubmitHandler}>
+        {!isLoginMode && (
+          <Input
+            element="input"
+            label="Name"
+            type="text"
+            id="name"
+            placeholder="Enter your name"
+            validators={[VALIDATOR_REQUIRE()]}
+            errorText="Please enter the name"
+            onInput={inputHandler}
+          ></Input>
+        )}
+        <Input
+          element="input"
+          id="email"
+          label="Email"
+          validators={[
+            VALIDATOR_MINLENGTH(4),
+            VALIDATOR_REQUIRE(),
+            VALIDATOR_EMAIL(),
+          ]}
+          placeholder="Enter your email"
+          type="email"
+          errorText="Please enter a valid email"
+          onInput={inputHandler}
+        />
+        <Input
+          element="input"
+          label="Password"
+          id="password"
+          validators={[VALIDATOR_MINLENGTH(4), VALIDATOR_REQUIRE()]}
+          placeholder="Enter your password"
+          type="password"
+          errorText="Please enter a valid password"
+          onInput={inputHandler}
+        />
+        <Button disabled={!formState.isValid}>
+          {isLoginMode ? "LOGIN" : "SIGNUP"}
+        </Button>
+      </form>
+      <Button inverse onClick={switchModeHandler}>
+        SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
+      </Button>
+    </Card>
   );
 };
 

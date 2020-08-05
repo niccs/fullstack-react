@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require("uuid");
+
 const HttpError = require("../models/http-error");
 
 const PLACES = [
@@ -40,8 +42,59 @@ const getPlacesByUserId = (req, res, next) => {
   if (!placesForUserId || placesForUserId.length === 0) {
     return next(new HttpError("places for userIs not found", 404));
   }
-  res.json({ placesForUserId });
+  res.json({ places: placesForUserId });
 };
 
+const createPlace = (req, res, next) => {
+  const { title, description, address, coordinates, creatorId } = req.body;
+  const newPlace = {
+    placeId: uuidv4(),
+    title,
+    description,
+    address,
+    location: coordinates,
+    creatorId,
+  };
+
+  PLACES.push(newPlace);
+  res.status(201).json({ place: newPlace });
+};
+
+const updatePlace = (req, res, next) => {
+  const pId = req.params.pid;
+  const { title, description } = req.body;
+
+  const placeToBeUpdated = PLACES.find((place) => pId === place.placeId);
+  if (!placeToBeUpdated) {
+    return next(new HttpError("place with id not found " + pId, 500));
+  }
+  placeToBeUpdated.title = title;
+  placeToBeUpdated.description = description;
+  const InexOfPlaceToBeUpdated = PLACES.findIndex(
+    (place) => pId === place.placeId
+  );
+
+  PLACES[InexOfPlaceToBeUpdated] = placeToBeUpdated;
+  res.status(200).json({ place: placeToBeUpdated });
+};
+
+const deletePlace = (req, res, next) => {
+  const pId = req.params.pid;
+
+  const indexOfPlaceToBeDeleted = PLACES.findIndex(
+    (place) => pId === place.placeId
+  );
+
+  if (!(indexOfPlaceToBeDeleted + 1)) {
+    return next(new HttpError("invalid place Id " + pId, 500));
+  }
+
+  PLACES.splice(indexOfPlaceToBeDeleted, 1);
+
+  res.status(200).json({ message: "done deletion" });
+};
 exports.getPlaceById = getPlaceById;
 exports.getPlacesByUserId = getPlacesByUserId;
+exports.createPlace = createPlace;
+exports.updatePlace = updatePlace;
+exports.deletePlace = deletePlace;

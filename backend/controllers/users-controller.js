@@ -1,17 +1,19 @@
 const { v4: uuidv4 } = require("uuid");
 
+const HTTPError = require("../models/http-error");
+
 const USERS = [
   {
     id: "u1",
-    image: "https://homepages.cae.wisc.edu/~ece533/images/airplane.png",
     name: "nix",
-    description: "done",
+    email: "neetikasood@gmail.com",
+    password: "done",
   },
   {
     id: "u2",
-    image: "https://homepages.cae.wisc.edu/~ece533/images/airplane.png",
-    name: "nix2",
-    description: "done",
+    name: "nix1",
+    email: "neetikasood1@gmail.com",
+    password: "done1",
   },
 ];
 
@@ -20,19 +22,29 @@ const getUsers = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { image, name, description } = req.body;
+  const { name, email, password } = req.body;
   const newUser = {
     id: uuidv4(),
-    image,
     name,
-    description,
+    email,
+    password,
   };
   USERS.push(newUser);
   res.status(201).json({ user: newUser });
 };
 
 const loginUser = (req, res, next) => {
-  res.status(201).json({ message: "user created" });
+  const { email, password } = req.body;
+  const userFound = USERS.find((user) => email === user.email);
+
+  console.log(userFound);
+  if (!userFound) {
+    return next(new HTTPError("user not found", 422));
+  }
+  if (userFound.password !== password) {
+    return next(new HTTPError("user not found wrong password", 401));
+  }
+  res.status(201).json({ message: "user found" });
 };
 
 exports.getUsers = getUsers;
